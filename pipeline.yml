@@ -1,0 +1,77 @@
+---
+resources:
+- name: github-code
+  type: git
+  source:
+    uri: git@github.com:whewawal/cicd-concourse-ci.git
+    private_key: |
+      -----BEGIN RSA PRIVATE KEY-----
+      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
+      -----END RSA PRIVATE KEY-----
+- name: tool-docker-image
+  type: docker-image
+  source:
+    email: {{docker-hub-email}}
+    username: {{docker-hub-username}}
+    password: {{docker-hub-password}}
+    repository: {{docker-hub-image-resource}}
+
+jobs:
+- name: unit-test
+  public: true
+  plan:
+  - get: github-code
+  - put: tool-docker-image
+    params:
+      build: github-code
+  - task: run-unit-test
+    file: github-code/unit-test.yml 
+
