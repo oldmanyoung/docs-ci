@@ -23,9 +23,9 @@ jobs:
       image_resource: 
         type: docker-image
         source: 
-#          email: ((docker-hub-email))
-#          username: ((docker-hub-username))
-#          password: ((docker-hub-password))
+          email: ((docker-hub-email))
+          username: ((docker-hub-username))
+          password: ((docker-hub-password))
           repository: ((docker-hub-base-image))
       inputs:
         - name: github-code
