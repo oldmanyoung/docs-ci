@@ -7,8 +7,6 @@ resources:
     #uri: git@github.com:oldmanyoung/docs-ci.git  # SSH not working from ATG servers
     branch: master
     paths: [project/documentation/*]
-    username: ((git-http-user))
-    password: ((git-http-token))
 
 jobs:
 - name: build-docs
@@ -23,10 +21,10 @@ jobs:
       image_resource: 
         type: docker-image
         source: 
-          email: ((docker-hub-email))
-          username: ((docker-hub-username))
-          password: ((docker-hub-password))
-          repository: ((docker-hub-base-image))
+          email: {{docker-hub-email}}
+          username: {{docker-hub-username}}
+          password: {{docker-hub-password}}
+          repository: {{docker-hub-base-image}}
       inputs:
         - name: github-code
       run:

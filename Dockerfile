@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM oldmanyoung/repotest:latest
 MAINTAINER Steve Young (smyoung@cisco.com)
 RUN apk update
 RUN apk add python
