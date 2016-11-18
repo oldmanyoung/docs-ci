@@ -1,12 +1,19 @@
 ---
 resources:
-- name: github-code
+- name: github-code-docs
   type: git
   source:
     uri: https://github.com/oldmanyoung/docs-ci.git
     #uri: git@github.com:oldmanyoung/docs-ci.git  # SSH not working from ATG servers
     branch: master
 #    paths: [project/documentation/*]
+- name: github-code-dockerfile
+  type: git
+  source:
+    uri: https://github.com/oldmanyoung/docs-ci.git
+    #uri: git@github.com:oldmanyoung/docs-ci.git  # SSH not working from ATG servers
+    branch: master
+    paths: [./Dockerfile]
 - name: docker-image
   type: docker-image
   source:
@@ -20,7 +27,7 @@ jobs:
   public: true
   serial: true
   plan:
-  - get: github-code
+  - get: github-code-docs
     trigger: true
   - task: run-build-docs
     config:
@@ -33,16 +40,16 @@ jobs:
           password: {{docker-hub-password}}
           repository: {{docker-hub-base-image}}
       inputs:
-        - name: github-code
+        - name: github-code-docs
       run:
-        path: github-code/build-docs.sh
+        path: github-code-docs/build-docs.sh
 - name: build-docker-image
   public: true
   serial: true
   plan:
-  - get: github-code
+  - get: github-code-dockerfile
     trigger: true
   - put: docker-image
     params:
-      build: github-code
+      build: github-code-dockerfile
       image_resource:
