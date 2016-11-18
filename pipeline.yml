@@ -7,6 +7,13 @@ resources:
     #uri: git@github.com:oldmanyoung/docs-ci.git  # SSH not working from ATG servers
     branch: master
 #    paths: [project/documentation/*]
+- name: docker-image
+  type: docker-image
+  source:
+    email: {{docker-hub-email}}
+    username: {{docker-hub-username}}
+    password: {{docker-hub-password}}
+    repository: {{docker-hub-base-image}}
 
 jobs:
 - name: build-docs
@@ -18,9 +25,9 @@ jobs:
   - task: run-build-docs
     config:
       platform: linux
-      image_resource: 
+      image_resource:
         type: docker-image
-        source: 
+        source:
           email: {{docker-hub-email}}
           username: {{docker-hub-username}}
           password: {{docker-hub-password}}
@@ -29,3 +36,13 @@ jobs:
         - name: github-code
       run:
         path: github-code/build-docs.sh
+- name: build-docker-image
+  public: true
+  serial: true
+  plan:
+  - get: github-code
+    trigger: true
+  - put: docker-image
+    params:
+      build: github-code
+      image_resource:
