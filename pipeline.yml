@@ -21,7 +21,7 @@ resources:
     username: {{docker-hub-username}}
     password: {{docker-hub-password}}
     repository: {{docker-hub-base-image}}
-
+#test comment
 jobs:
 - name: build-docs
   public: true
