@@ -13,7 +13,7 @@ resources:
     uri: https://github.com/oldmanyoung/docs-ci.git
     #uri: git@github.com:oldmanyoung/docs-ci.git  # SSH not working from ATG servers
     branch: master
-    paths: [./Dockerfile]
+    paths: [Dockerfile]
 - name: docker-image
   type: docker-image
   source:
