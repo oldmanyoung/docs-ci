@@ -35,6 +35,7 @@ def pprint(data):
 def get_page_ancestors(auth, pageid):
  
     # Get basic page information plus the ancestors property
+    # This basically fetches the parent page ID, which may be necessary to edit a child page
  
     url = '{base}/{pageid}?expand=ancestors'.format(
         base = BASE_URL,
@@ -61,9 +62,12 @@ def get_page_info(auth, pageid):
  
  
 def write_data(auth, html, pageid, title = None):
+
+    # This is the main function of this script, writing new data to the page
  
     info = get_page_info(auth, pageid)
  
+    # Iterates the page version # because you need to specify the next page version # for the new page
     ver = int(info['version']['number']) + 1
  
     ancestors = get_page_ancestors(auth, pageid)
@@ -75,7 +79,8 @@ def write_data(auth, html, pageid, title = None):
  
     if title is not None:
         info['title'] = title
- 
+    
+    # Specifies the JSON data for the payload of the Confluence API POST request.
     data = {
         'id' : str(pageid),
         'type' : 'page',
