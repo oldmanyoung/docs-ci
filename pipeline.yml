@@ -21,7 +21,15 @@ resources:
     username: {{docker-hub-username}}
     password: {{docker-hub-password}}
     repository: {{docker-hub-base-image}}
-#test comment
+- name: artf-docker-image
+  type: docker-image
+  source:
+    username: {{artf-username}}
+    password: {{artf-password}}
+    repository: {{artf-repository-docker}}
+#    tag: {{artf-repository-docker-tag}}
+    insecure_registries: ["cicd-nginx-artifactory.cisco.com"]
+
 jobs:
 - name: build-docs
   public: true
@@ -50,6 +58,16 @@ jobs:
   - get: github-code-dockerfile
     trigger: true
   - put: docker-image
+    params:
+      build: github-code-dockerfile
+      image_resource:
+- name: upload-docker-image-cicd-artifactory
+  public: true
+  serial: true
+  plan:
+  - get: github-code-dockerfile
+    trigger: true
+  - put: artf-docker-image
     params:
       build: github-code-dockerfile
       image_resource:
