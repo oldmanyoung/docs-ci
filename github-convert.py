@@ -43,6 +43,11 @@ def main():
     payload = {'text': html}
 
     r = requests.post(giturl, data=json.dumps(payload))
-    print(r.text)
+    #print(r.text)
+    temphtml = r.text
+#    print(temphtml)
+    f = open('tempfile.html', 'w')
+    f.write(temphtml)
+    f.close()
 
 if __name__ == "__main__" : main()
