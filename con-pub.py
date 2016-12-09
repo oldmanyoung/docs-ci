@@ -8,7 +8,7 @@
 import argparse
 import getpass
 import sys
-
+import requests
 import json
 import keyring
 import requests
@@ -16,9 +16,9 @@ import requests
 #-----------------------------------------------------------------------------
 # Globals
 
-BASE_URL = "https://metacloud.jira.com/wiki/rest/api/content"
-
-VIEW_URL = "https://metacloud.jira.com/wiki/pages/viewpage.action?pageId="
+WIKI_BASE_URL = "https://metacloud.jira.com/wiki/rest/api/content"
+WIKI_VIEW_URL = "https://metacloud.jira.com/wiki/pages/viewpage.action?pageId="
+GITHUB_URL = "https://api.github.com/markdown"
 
 
 def pprint(data):
@@ -32,16 +32,23 @@ def pprint(data):
         separators = (', ', ' : '))
 
 
+def convert_to_html(mkdown):
+    giturl = GITHUB_URL
+    payload = {'text': mkdown}
+
+    r = requests.post(giturl, data=json.dumps(payload))
+    html = r.text
+
 def get_page_ancestors(auth, pageid):
 
     # Get basic page information plus the ancestors property
     # This basically fetches the parent page ID, which may be necessary to edit a child page
 
-    url = '{base}/{pageid}?expand=ancestors'.format(
-        base = BASE_URL,
+    wiki_url = '{base}/{pageid}?expand=ancestors'.format(
+        base = WIKI_BASE_URL,
         pageid = pageid)
 
-    r = requests.get(url, auth = auth)
+    r = requests.get(wiki_url, auth = auth)
 
     r.raise_for_status()
 
@@ -50,11 +57,11 @@ def get_page_ancestors(auth, pageid):
 
 def get_page_info(auth, pageid):
 
-    url = '{base}/{pageid}'.format(
-        base = BASE_URL,
+    wiki_url = '{base}/{pageid}'.format(
+        base = WIKI_BASE_URL,
         pageid = pageid)
 
-    r = requests.get(url, auth = auth)
+    r = requests.get(wiki_url, auth = auth)
 
     r.raise_for_status()
 
@@ -67,7 +74,8 @@ def write_data(auth, html, pageid, title = None):
 
     info = get_page_info(auth, pageid)
 
-    # Iterates the page version # because you need to specify the next page version # for the new page
+    # Iterates the page version # because you need to specify the
+    # next page version # for the new page
     ver = int(info['version']['number']) + 1
 
     ancestors = get_page_ancestors(auth, pageid)
@@ -98,10 +106,10 @@ def write_data(auth, html, pageid, title = None):
 
     data = json.dumps(data)
 
-    url = '{base}/{pageid}'.format(base = BASE_URL, pageid = pageid)
+    wiki_url = '{base}/{pageid}'.format(base = WIKI_BASE_URL, pageid = pageid)
 
     r = requests.put(
-        url,
+        wiki_url,
         data = data,
         auth = auth,
         headers = { 'Content-Type' : 'application/json' }
@@ -110,29 +118,24 @@ def write_data(auth, html, pageid, title = None):
     r.raise_for_status()
 
     print "Wrote '%s' version %d" % (info['title'], ver)
-    print "URL: %s%d" % (VIEW_URL, pageid)
+    print "URL: %s%d" % (WIKI_VIEW_URL, pageid)
 
 
 def get_login(username = None):
     '''
     Get the password for username out of the keyring.
     '''
-### The uncommented 'return' command below is temporary until we get vault
-### working for encrypted storage and access of user passwords. Once vault
-### is working, uncomment all the below lines and comment out or delete the
-### hardcoded 'return' line.
 
-#    if username is None:
-#        username = getpass.getuser()
+    if username is None:
+        username = getpass.getuser()
 
-#    passwd = keyring.get_password('confluence_script', username)
+    passwd = keyring.get_password('confluence_script', username)
 
-#    if passwd is None:
-#        passwd = getpass.getpass()
-#        keyring.set_password('confluence_script', username, passwd)
+    if passwd is None:
+        passwd = getpass.getpass()
+        keyring.set_password('confluence_script', username, passwd)
 
-#    return (username, passwd)
-    return ('cisjenkins.gen', 'SDLC!hehgen')
+    return (username, passwd)
 
 
 def main():
@@ -150,42 +153,27 @@ def main():
         "--title",
         default = None,
         type = str,
-        help = "Specify a new title")
+        help = "Specify a new title for the wiki page")
 
     parser.add_argument(
-        "-f",
-        "--file",
-        default = None,
+#        "-f",
+#        "--file",
+        "filename",
+#        default = None,
         type = str,
-        help = "Write the contents of FILE to the confluence page")
+        help = "Specify the markdown file to convert and publish")
 
     parser.add_argument(
         "pageid",
         type = int,
-        help = "Specify the Confluence page id to overwrite")
-
-    parser.add_argument(
-        "html",
-        type = str,
-        default = None,
-        nargs = '?',
-        help = "Write the immediate html string to confluence page")
+        help = "Specify the Conflunce page id to overwrite")
 
     options = parser.parse_args()
 
     auth = get_login(options.user)
 
-    if options.html is not None and options.file is not None:
-        raise RuntimeError(
-            "Can't specify both a file and immediate html to write to page!")
-
-    if options.html:
-        html = options.html
-
-    else:
-
-        with open(options.file, 'r') as fd:
-            html = fd.read()
+    with open(options.filename, 'r') as fd:
+        mkdown = fd.read()
 
     write_data(auth, html, options.pageid, options.title)
 

@@ -1,0 +1,59 @@
+---
+resources:
+- name: github-code-docs
+  type: git
+  source:
+    uri: https://github.com/cisco-cis/cicd-docs.git
+    branch: master
+#    paths: [project/documentation/*]
+    username: {{github-user}}
+    password: {{github-token}}
+- name: github-qaa-ansible-inventory
+  type: git
+  source:
+    uri: https://github.com/cisco-cis/qaa-ansible-inventory.git
+    branch: master
+    paths: [inventory]
+    username: {{github-user}}
+    password: {{github-token}}
+#- name: github-code-dockerfile
+#  type: git
+#  source:
+#    uri: https://github.com/cisco-cis/cicd-docs.git
+#    branch: master
+#    paths: [Dockerfile]
+#    username: {{github-user}}
+#    password: {{github-token}}
+#- name: docker-image
+#  type: docker-image
+#  source:
+#    email: {{docker-hub-email}}
+#    username: {{docker-hub-username}}
+#    password: {{docker-hub-password}}
+#    repository: {{docker-hub-base-image}}
+
+jobs:
+- name: update-inventory-page
+  public: true
+  serial: true
+  plan:
+  - get: github-code-docs
+    trigger: true
+  - get: github-qaa-ansible-inventory
+    trigger: true
+  - task: run-inventory-update
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          email: {{docker-hub-email}}
+          username: {{docker-hub-username}}
+          password: {{docker-hub-password}}
+          repository: {{docker-hub-base-image}}
+      inputs:
+        - name: github-code-docs
+        - name: github-qaa-ansible-inventory
+#          path: github-code-docs
+      run:
+        path: github-code-docs/run-convert-inventory.sh

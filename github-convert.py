@@ -14,20 +14,20 @@ def main():
         "--file",
         default = None,
         type = str,
-        help = "Write the contents of FILE to the confluence page")
+        help = "Convert the contents of FILE to a temp html file")
 
     parser.add_argument(
         "html",
         type = str,
         default = None,
         nargs = '?',
-        help = "Write the immediate html string to confluence page")
+        help = "Convert the immediate markdown text string to html")
 
     options = parser.parse_args()
 
     if options.html is not None and options.file is not None:
         raise RuntimeError(
-            "Can't specify both a file and immediate html to write to page!")
+            "Can't specify both a file and immediate markdown to write to page!")
 
     if options.html:
         html = options.html
